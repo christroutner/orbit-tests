@@ -101,10 +101,14 @@
 
   <div class="container">
     <div class="row">
-      <div class="col-sm-4">
-        <p>
-          Your Peer ID: <b><span id=peerid>abc123</span></b>
-        </p>
+      <div class="col-sm-12">
+        <form class="form-inline">
+          <div class="form-group">
+            <label for="peerId">Handle </label>
+            <input type="text" class="form-control" id="peerId" value="handle">
+            <button type="button" class="btn btn-default" onclick="loadMyOrders()">Load Existing Orders</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -129,7 +133,7 @@
             <input type="email" class="form-control" id="qty" placeholder="123">
           </div>
 
-          <button type="button" class="btn btn-default">Add Order</button>
+          <button type="button" class="btn btn-default" onclick="addOrder()">Add Order</button>
         </form>
       </div>
     </div>
@@ -140,18 +144,21 @@
   <div class="container">
     <div class="row">
       <div class="col-sm-12">
-        <table class="table table-striped">
+        <h4>Open Orders</h4>
+        <table class="table table-striped" id="orderTable">
           <tr>
             <th>Peer</th>
             <th>Order</th>
             <th>Price</th>
             <th>Qty</th>
+            <th>Cancel</th>
           </tr>
           <tr id="trScaffold">
             <td class="tdPeer"></td>
             <td class="tdOrder"></td>
             <td class="tdPrice"></td>
             <td class="tdQty"></td>
+            <td class="tdCancel"><button type="button" class="btn btn-default" style="display: none;">Cancel</button></td>
           </tr>
         </table>
       </div>
@@ -160,50 +167,7 @@
 
 </section>
 
-<div class='footer'>
-  <div class='container'>
-    <div class='row'>
-      <div class='col-sm-4 col-md-3 col-xs-6'>
-        <h4>Who We Are</h4>
-        <p><i>Blasting Off With Bootstrap</i> is the fastest way to space. <a href='#'>Book your ticket today</a>!</p>
-        <p><a href='#'>More About Us <i class='glyphicon glyphicon-arrow-right'></i></a></p>
-      </div>
 
-      <div class='col-sm-2 col-xs-6 col-md-offset-1'>
-        <h4>Links</h4>
-        <ul class='list-unstyled'>
-          <li><a href='#'>Home</a></li>
-          <li><a href='#'>Tickets</a></li>
-          <li><a href='#'>Stations</a></li>
-        </ul>
-      </div>
-
-      <div class='clearfix visible-xs'></div>
-
-      <div class='col-sm-2 col-xs-6'>
-        <h4>Stay in Touch</h4>
-        <ul class='list-unstyled'>
-          <li><a href='#'>About</a></li>
-          <li><a href='#'>Contact Us</a></li>
-          <li><a href='#'>Blog</a></li>
-          <li><a href='#'>Twitter</a></li>
-          <li><a href='#'>Facebook</a></li>
-        </ul>
-      </div>
-
-      <div class='col-sm-4 col-md-3 col-md-offset-1 col-xs-6'>
-        <h4>Contact Us</h4>
-        <ul class='list-unstyled'>
-          <li><i class='glyphicon glyphicon-globe'></i> Orlando, FL<li>
-          <li><i class='glyphicon glyphicon-phone'></i> 1-555-blast-off<li>
-          <li><i class='glyphicon glyphicon-envelope'></i> <a href='mailto:#'>blastingoff@codeschool.com</a><li>
-        </ul>
-
-        <p>Blasting Off With Bootstrap &copy;2214.</p>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- CDN -->
 <!--
@@ -227,24 +191,33 @@
   const PRICE_URL = '/price';
   const DB_URL = '/orderbook';
 
+  // Chart variables.
   const prices = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,];
   const labels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
   let cfg;
   let ctx;
   let chart;
+
+  // Database variables.
   let db;
   let dbReady = false; // Flag to signal when DB is ready to use.
 
+  // Order book variables.
+  let peers; // DB entry of other peers.
+
+
+  // This function executes when the page has finished loading.
   $(document).ready(function() {
 
+    // Initialize the price chart.
     ctx = document.getElementById('chart1').getContext('2d');
     ctx.canvas.width = 1000;
 		ctx.canvas.height = 300;
     cfg = configChart();
 		chart = new Chart(ctx, cfg);
 
+    // Load IPFS and the Orbit DB.
     loadIPFS();
-
   });
 
   async function loadIPFS() {
@@ -290,11 +263,18 @@
         });
         console.log(`Connected to DB ${dbAddress}`);
 
+        db.events.on('ready', () => {
+          console.log(`db is ready!`)
+        })
+
         await db.load();
         console.log(`DB loaded.`)
 
         // Signal that the DB is ready for use.
         dbReady = true;
+
+        // Retrieve existing orders from the DB.
+        getOrders();
       })
     } catch(err) {
       console.error(`Error in loadIPFS: `, err);
@@ -318,7 +298,7 @@
     });
   }
 
-  // Update the price array. Keeps the length fixed.
+  // Update the price array. Keeps the length of the array fixed.
   async function updatePrice() {
     try {
       //debugger;
@@ -385,6 +365,139 @@
         return reject(error);
       })
     });
+  }
+
+  // Load orders from the orderbook DB.
+  async function getOrders() {
+    try {
+      // Exit if DB is not ready.
+      if(!dbReady) return;
+
+      // Get the list of peers.
+      let peers = db.get('peers')
+
+      const myHandle = $('#peerId').val();
+
+      // Handle a new DB.
+      if(!peers) {
+        peers = [myHandle]
+      }
+
+      // Get orders for each peer.
+      for(var i = 0; i < peers.length; i++) {
+        const thisPeer = peers[i]
+
+        let orders = db.get(thisPeer)
+        if(!orders) orders = [];
+
+        //console.log(`Order belonging to ${thisPeer}: ${JSON.stringify(orders)}`)
+
+        // Loop through each order.
+        for(var j=0; j < orders.length; j++) {
+          const thisOrder = orders[j];
+          const thisRow = $('#trScaffold').clone();
+
+          thisRow.find('.tdPeer').text(thisPeer);
+
+          if(thisOrder.buysell)
+            thisRow.find('.tdOrder').text('Buy')
+          else
+            thisRow.find('.tdOrder').text('Sell')
+
+          thisRow.find('.tdPrice').text(thisOrder.price)
+
+          thisRow.find('.tdQty').text(thisOrder.qty)
+
+          thisRow.find('.tdCancel').find('button').show()
+
+          $('#orderTable').append(thisRow)
+        }
+      }
+
+    } catch(err) {
+      console.error(`Error in getOrder(): `, err);
+      throw err;
+    }
+  }
+
+  async function loadMyOrders() {
+    try {
+      console.log(`loadMyOrder button clicked!`)
+
+      const myHandle = $('#peerId').val();
+
+      // Get the list of peers
+      let peers = db.get('peers')
+
+      // Exit if peer is not found.
+      if(!peers) return;
+      if(peers.indexOf(myHandle) < 0) return;
+
+      let orders = db.get(myHandle);
+
+      console.log(`My orders: ${JSON.stringify(orders,null,2)}`)
+
+    } catch(err) {
+      console.error(`Error in loadMyOrders(): `, err);
+      throw err;
+    }
+  }
+
+  async function addOrder() {
+    try {
+      console.log(`addOrder button clicked!`)
+
+      const buysell = $('#orderType').val() === "buy";
+      const price = $('#price').val();
+      const qty = $('#qty').val();
+
+      // Input Validation
+      if(price === "") return;
+      if(qty === "") return;
+
+      // Retrieve data from the web forms.
+      const myHandle = $('#peerId').val();
+      const myOrder = {
+        buysell: buysell,
+        price: price,
+        qty: qty
+      }
+
+      // Get the list of peers
+      let peers = db.get('peers')
+
+      // Handle a new DB.
+      if(!peers) {
+        peers = [myHandle]
+        await db.put('peers', peers);
+
+      // Add user to peers list if they aren't already there.
+      } else {
+        if(peers.indexOf(myHandle) === -1) {
+          peers.push(myHandle);
+          await db.put('peers', peers);
+        }
+      }
+
+
+      // Get existing orders for this peer.
+      let myOrders = db.get(myHandle);
+
+      if(!myOrders) {
+        myOrders = [myOrder];
+      } else {
+        myOrders.push(myOrder);
+      }
+
+      // Save the new order to the DB.
+      await db.put(myHandle, myOrders);
+
+      console.log(`Order added to DB!`)
+
+    } catch(err) {
+      console.error(`Error in addOrder(): `,err);
+      throw err;
+    }
   }
 
 </script>
