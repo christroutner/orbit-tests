@@ -1,3 +1,0 @@
-'use strict'
-
-exports.ERR_REPO_NOT_INITIALIZED = 'ERR_REPO_NOT_INITIALIZED'
