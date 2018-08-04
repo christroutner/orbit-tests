@@ -87,6 +87,8 @@
 </section>
 
 <section>
+  <h2>Test Area</h2>
+
   <div class="container">
     <div class="row">
       <div class="col-sm-12">
@@ -94,7 +96,16 @@
       </div>
     </div>
   </div>
-<h2>Test Area</h2>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12">
+
+      </div>
+    </div>
+  </div>
+
+
 </section>
 
 <div class='footer'>
@@ -142,12 +153,22 @@
   </div>
 </div>
 
+<!-- CDN -->
+<!--
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
 <script src="https://unpkg.com/ipfs/dist/index.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+-->
+
+<!-- Local Libraries -->
+<script src="js/jquery.min.js"></script>
+<script src="js/moment.min.js"></script>
+<script src="js/index.min.js"></script>
+<script src="js/Chart.min.js"></script>
+
 <script src="js/orbitdb.min.js"></script>
 <script src="js/bootstrap.min.js?body=1"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
 <script>
 
   const PRICE_SERVER = `http://10.10.10.54:4000/price`;
@@ -229,7 +250,7 @@
       chart.update();
 
     } catch(err) {
-      console.error(`Error in updatePrice(): `, err);
+      //console.error(`Error in updatePrice(): `, err);
     }
   }
 
