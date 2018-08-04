@@ -32,7 +32,7 @@ ipfs.on('ready', async () => {
     write: ['*'],
   }
 
-  const db = await orbitdb.keyvalue('coinA-coinB', access)
+  const db = await orbitdb.keyvalue('orderbook', access)
   await db.load()
 
   console.log(`database string: ${db.address.toString()}`)
