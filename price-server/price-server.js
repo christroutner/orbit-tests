@@ -24,6 +24,12 @@ function expressErrorHandler(err) {
   process.exit(0);
 }
 
+// Allow any computer to access this API.
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
 // Initial price
 let price = 1000.00;
