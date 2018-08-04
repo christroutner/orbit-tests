@@ -87,6 +87,13 @@
 </section>
 
 <section>
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12">
+        <canvas id="chart1"></canvas>
+      </div>
+    </div>
+  </div>
 <h2>Test Area</h2>
 </section>
 
@@ -136,13 +143,19 @@
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
 <script src="https://unpkg.com/ipfs/dist/index.min.js"></script>
 <script src="js/orbitdb.min.js"></script>
 <script src="js/bootstrap.min.js?body=1"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
 <script>
 
   const PRICE_SERVER = `http://192.168.43.202:4000/price`;
-  const prices = [];
+  const prices = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,];
+  const labels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+  let cfg;
+  let ctx;
+  let chart;
 
   $(document).ready(function() {
 
@@ -174,7 +187,11 @@
       await console.log(getPrice());
     })
 
-
+    ctx = document.getElementById('chart1').getContext('2d');
+    ctx.canvas.width = 1000;
+		ctx.canvas.height = 300;
+    cfg = configChart();
+		chart = new Chart(ctx, cfg);
 
   });
 
@@ -198,23 +215,56 @@
   // Update the price array. Keeps the length fixed.
   async function updatePrice() {
     try {
+      //debugger;
+
       const newPrice = await getPrice();
 
-      if(prices.length < 20) {
-        prices.push(newPrice);
-      } else {
-        //debugger;
-        prices.shift();
-        prices.push(newPrice);
-      }
+      prices.shift();
+      prices.push(newPrice);
+      chart.data.datasets[0].data.shift();
+      chart.data.datasets[0].data.push(newPrice);
+
       console.log(prices);
+
+      chart.update();
+
     } catch(err) {
-      throw err;
+      console.error(`Error in updatePrice(): `, err);
     }
   }
 
+  function configChart() {
+    const cfg = {
+			type: 'bar',
+			data: {
+				labels: labels,
+				datasets: [{
+					label: 'CHRT - Chart.js Corporation',
+					data: prices,
+					type: 'line',
+					pointRadius: 0,
+					fill: false,
+					lineTension: 0,
+					borderWidth: 2
+				}]
+			},
+			options: {
+				scales: {
+					yAxes: [{
+						scaleLabel: {
+							display: true,
+							labelString: 'Closing price ($)'
+						}
+					}]
+				}
+			}
+		};
+
+    return cfg;
+  }
+
   // Update the price every 2 seconds.
-  setInterval(function() {
+  const timer = setInterval(function() {
     updatePrice();
   }, 2000);
 
