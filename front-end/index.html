@@ -97,14 +97,66 @@
     </div>
   </div>
 
+  <hr>
+
   <div class="container">
     <div class="row">
-      <div class="col-sm-12">
+      <div class="col-sm-4">
+        <p>
+          Your Peer ID: <b><span id=peerid>abc123</span></b>
+        </p>
+      </div>
+    </div>
 
+    <div class="row">
+      <div class="col-sm-12">
+        <form class="form-inline">
+          <div class="form-group">
+            <label for="orderType">Type</label>
+            <select id="orderType">
+              <option value="buy">Buy</option>
+              <option value="sell">Sell</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="price">Price</label>
+            <input type="text" class="form-control" id="price" placeholder="1023">
+          </div>
+
+          <div class="form-group">
+            <label for="qty">Qty</label>
+            <input type="email" class="form-control" id="qty" placeholder="123">
+          </div>
+
+          <button type="button" class="btn btn-default">Add Order</button>
+        </form>
       </div>
     </div>
   </div>
 
+  <hr>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12">
+        <table class="table table-striped">
+          <tr>
+            <th>Peer</th>
+            <th>Order</th>
+            <th>Price</th>
+            <th>Qty</th>
+          </tr>
+          <tr id="trScaffold">
+            <td class="tdPeer"></td>
+            <td class="tdOrder"></td>
+            <td class="tdPrice"></td>
+            <td class="tdQty"></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
 
 </section>
 
@@ -171,42 +223,19 @@
 <script src="js/bootstrap.min.js?body=1"></script>
 <script>
 
-  const PRICE_SERVER = `http://10.10.10.54:4000/price`;
+  const SERVER = `http://192.168.43.202:6543`;
+  const PRICE_URL = '/price';
+  const DB_URL = '/orderbook';
+
   const prices = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,];
   const labels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
   let cfg;
   let ctx;
   let chart;
+  let db;
+  let dbReady = false; // Flag to signal when DB is ready to use.
 
   $(document).ready(function() {
-
-    // Create IPFS instance
-    const ipfs = new Ipfs({
-      //repo: '/orbitdb/examples/browser/new/ipfs/0.27.3',
-      repo: 'ipfs-' + Math.random(),
-      start: true,
-      EXPERIMENTAL: {
-        pubsub: true,
-      },
-      config: {
-        Addresses: {
-          Swarm: [
-            // Use IPFS dev signal server
-            // '/dns4/star-signal.cloud.ipfs.team/wss/p2p-webrtc-star',
-            '/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star',
-            // Use local signal server
-            // '/ip4/0.0.0.0/tcp/9090/wss/p2p-webrtc-star',
-          ]
-        },
-      }
-    })
-
-    ipfs.on('error', (e) => handleError(e))
-
-    ipfs.on('ready', async () => {
-      orbitdb = new OrbitDB(ipfs);
-      await console.log(getPrice());
-    })
 
     ctx = document.getElementById('chart1').getContext('2d');
     ctx.canvas.width = 1000;
@@ -214,7 +243,63 @@
     cfg = configChart();
 		chart = new Chart(ctx, cfg);
 
+    loadIPFS();
+
   });
+
+  async function loadIPFS() {
+    try {
+      const dbAddress = await getDbAddress();
+      console.log(`dbAddress: ${dbAddress}`);
+
+      // Create IPFS instance
+      const ipfs = new Ipfs({
+        //repo: '/orbitdb/examples/browser/new/ipfs/0.27.3',
+        repo: 'ipfs-' + Math.random(),
+        start: true,
+        EXPERIMENTAL: {
+          pubsub: true,
+        },
+        config: {
+          Addresses: {
+            Swarm: [
+              // Use IPFS dev signal server
+              // '/dns4/star-signal.cloud.ipfs.team/wss/p2p-webrtc-star',
+              '/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star',
+              // Use local signal server
+              // '/ip4/0.0.0.0/tcp/9090/wss/p2p-webrtc-star',
+              '/ip4/192.168.43.202/tcp/4002/ipfs/QmW3hpPj61QqAFw1EP9WUQ3wMobpbGzwVaPxUr1tf4EviU'
+            ]
+          },
+        }
+      })
+
+      ipfs.on('error', (e) => handleError(e))
+
+      ipfs.on('ready', async () => {
+        orbitdb = new OrbitDB(ipfs);
+        db = await orbitdb.open(dbAddress, {
+          // If database doesn't exist, create it
+          create: true,
+          overwrite: true,
+          // Load only the local version of the database,
+          // don't load the latest from the network yet
+          localOnly: false,
+          type: 'keyvalue',
+          write: ['*'],
+        });
+        console.log(`Connected to DB ${dbAddress}`);
+
+        await db.load();
+        console.log(`DB loaded.`)
+
+        // Signal that the DB is ready for use.
+        dbReady = true;
+      })
+    } catch(err) {
+      console.error(`Error in loadIPFS: `, err);
+    }
+  }
 
   function handleError(e) {
     console.error(e.stack)
@@ -224,7 +309,7 @@
   // Get the price from the price API server.
   function getPrice() {
     return new Promise(function(resolve, reject) {
-      $.get(PRICE_SERVER, '', function(data) {
+      $.get(`${SERVER}${PRICE_URL}`, '', function(data) {
         return resolve(Math.round(Number(data)*100)/100);
       })
       .fail((jqxhr, textStatus, error) => {
@@ -240,13 +325,13 @@
 
       const newPrice = await getPrice();
 
+      // Manipulate the arrays to ensure there are always a fixed number of data points.
       prices.shift();
       prices.push(newPrice);
       chart.data.datasets[0].data.shift();
       chart.data.datasets[0].data.push(newPrice);
 
-      console.log(prices);
-
+      // Update the chart.
       chart.update();
 
     } catch(err) {
@@ -254,6 +339,7 @@
     }
   }
 
+  // Chart configuration settings.
   function configChart() {
     const cfg = {
 			type: 'bar',
@@ -288,6 +374,18 @@
   const timer = setInterval(function() {
     updatePrice();
   }, 2000);
+
+  // Get the DB IPFS address
+  function getDbAddress() {
+    return new Promise(function(resolve, reject) {
+      $.get(`${SERVER}${DB_URL}`, '', function(data) {
+        return resolve(data);
+      })
+      .fail((jqxhr, textStatus, error) => {
+        return reject(error);
+      })
+    });
+  }
 
 </script>
 </body>

@@ -15,7 +15,7 @@ util.inspect.defaultOptions = {
 
 // Global Variables
 const app = express();
-const port = 4000;
+const port = 6543;
 let db;
 
 async function start() {
@@ -56,7 +56,7 @@ async function start() {
       // Calculate a new price.
       price = price * (1 - rndNum);
 
-      console.log(`price: ${price}`);
+      //console.log(`price: ${price}`);
     }, 1000);
 
     // Price API endpoint.
