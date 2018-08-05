@@ -174,6 +174,12 @@ async function matchOrders() {
     const peers = db.get('peers');
     const userOrders = db.get(myHandle);
 
+    // handling a bug.
+    if(!userOrders) {
+      debugger;
+      return;
+    }
+
     // Loop through each order associated with this user.
     for(var k=0; k < userOrders.length; k++) {
       const userOrder = userOrders[k];
