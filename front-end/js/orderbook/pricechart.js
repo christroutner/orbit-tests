@@ -47,7 +47,7 @@ function configChart() {
 		data: {
 			labels: labels,
 			datasets: [{
-				label: 'CHRT - Chart.js Corporation',
+				label: 'RWLK - Random Walk Price',
 				data: prices,
 				type: 'line',
 				pointRadius: 0,

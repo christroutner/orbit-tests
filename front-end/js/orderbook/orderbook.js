@@ -65,7 +65,14 @@ async function showOrders() {
 
         thisRow.find('.tdQty').text(thisOrder.qty)
 
-        thisRow.find('.tdCancel').find('button').show()
+        const cancelButton = thisRow.find('.tdCancel').find('button')
+        if(thisPeer === myHandle) {
+          cancelButton.show()
+          cancelButton.prop('data-handle', myHandle);
+          cancelButton.prop('data-price', thisOrder.price);
+          cancelButton.prop('data-buysell', thisOrder.buysell);
+          cancelButton.click(cancelOrder);
+        }
 
         $('#orderTable').append(thisRow)
       }
@@ -75,6 +82,26 @@ async function showOrders() {
     console.error(`Error in showOrders(): `, err);
     throw err;
   }
+}
+
+// Called when the user clicks on the Cancel Button next to an order.
+async function cancelOrder(event) {
+  const thisBtn = $(this);
+  const handle = thisBtn.prop('data-handle');
+  const buysell = thisBtn.prop('data-buysell');
+  const price = thisBtn.prop('data-price');
+
+  // Get all orders associated with this user.
+  const orders = db.get(handle);
+
+  // Filter out the current order.
+  const newOrders = orders.filter(order => order.buysell !== buysell && order.price !== price);
+
+  // Update the database.
+  db.put(handle, newOrders);
+
+  resetTable();
+  showOrders();
 }
 
 // Called when the user clicks the 'Add Order' button. Adds an order

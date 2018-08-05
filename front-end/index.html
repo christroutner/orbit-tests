@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Blasting Off With Bootstrap</title>
+  <title>orbitDB Order Book Demo</title>
 
   <link href="css/bootstrap.min.css" media="all" rel="stylesheet" />
   <link href="css/main.css" media="all" rel="stylesheet" />
@@ -21,32 +21,8 @@
 <header class='navbar navbar-default navbar-fixed-top'>
   <nav class='container' role='navigation'>
     <div class='navbar-header'>
-      <a href='index.html' class='navbar-brand'>Blasting Off With Bootstrap</a>
-
-      <button type='button' class='navbar-toggle collapsed' data-toggle='collapse' data-target='.navbar-collapse'>
-        <span class='sr-only'>Toggle navigation</span>
-        <span class='icon-bar'></span>
-        <span class='icon-bar'></span>
-        <span class='icon-bar'></span>
-      </button>
+      <a href='index.html' class='navbar-brand'>OrbitDB IPFS Order Book Demo</a>
     </div>
-
-    <ul class='nav navbar-nav navbar-right collapse navbar-collapse'>
-      <li><a href='#'>Tickets</a></li>
-      <li><a href='#'>Stations</a></li>
-      <li class='dropdown'>
-        <a href='/about' data-target='#' class='dropdown-toggle' data-toggle='dropdown'>About <span class='caret'></span></a>
-        <ul class='dropdown-menu' role='menu'>
-          <li><a href='#'>Our Story</a></li>
-          <li><a href='#'>Contact Us</a></li>
-          <li class='divider'></li>
-          <li><a href='#'>Blog</a></li>
-          <li class='divider'></li>
-          <li><a href='#'>Twitter</a></li>
-          <li><a href='#'>Facebook</a></li>
-        </ul>
-      </li>
-    </ul>
   </nav>
 </header>
 
@@ -54,41 +30,24 @@
   <div class='container'>
     <div class='row well well-lg'>
       <div class='col-md-6'>
-        <h2>The Fastest Way to Space</h2>
-        <p class='lead'>Make your way to space in our rocket, elevator or transporter.</p>
-        <button type='button' class='btn btn-lg btn-default'>Take the Tour</button>
-        <button type='button' class='btn btn-lg btn-primary'>Book Tickets Now</button>
+        <h2>P2P Order Book Demo</h2>
+        <p class='lead'>
+          <a href="https://github.com/orbitdb/orbit-db" target="_blank">OrbitDB</a>
+          is a peer-to-peer database running over
+          <a href="https://ipfs.io/" target="_blank">IPFS</a>.
+          This app is a prototype implementation of a buy-sell order book
+          using this technology.
+        </p>
       </div>
       <div class='col-md-6 visible-md visible-lg'>
         <img src='images/img-header.jpg' alt='Blast off with Bootstrap' />
       </div>
     </div>
 
-    <div class='row text-center features'>
-      <div class='col-sm-4 col-xs-10 col-xs-offset-1 col-sm-offset-0'>
-        <i class='glyphicon glyphicon-briefcase '></i>
-        <h3>Book Today!</h3>
-        <p>Even if you're traveling tomorrow, you can still get tickets today. We have a number of conveniently located ports around the globe to service everyone.</p>
-      </div>
-
-      <div class='col-sm-4 col-xs-6'>
-        <i class='glyphicon glyphicon-random'></i>
-        <h3>Go Anywhere</h3>
-        <p>If you need to get to space today, why not try out a transporter? Despite the claims, there are have been no deaths in the last 6 weeks!</p>
-      </div>
-
-      <div class='col-sm-4 col-xs-6'>
-        <i class='glyphicon glyphicon-send'></i>
-        <h3>RocketBus&reg;</h3>
-        <p>For cheapest fares, catch the next RocketBus&reg; to the stars. Cheaper on your wallet, and easiest way to make friends.</p>
-      </div>
-    </div>
   </div>
 </section>
 
 <section>
-  <h2>Test Area</h2>
-
   <div class="container">
     <div class="row">
       <div class="col-sm-12">
@@ -106,7 +65,7 @@
           <div class="form-group">
             <label for="peerId">Handle </label>
             <input type="text" class="form-control" id="peerId" value="handle">
-            <button type="button" class="btn btn-default" onclick="loadMyOrders()">Login Handle</button>
+            <!-- <button type="button" class="btn btn-default">Login Handle</button> -->
           </div>
         </form>
       </div>
@@ -324,29 +283,6 @@
         return reject(error);
       })
     });
-  }
-
-  async function loadMyOrders() {
-    try {
-      console.log(`loadMyOrder button clicked!`)
-
-      const myHandle = $('#peerId').val();
-
-      // Get the list of peers
-      let peers = db.get('peers')
-
-      // Exit if peer is not found.
-      if(!peers) return;
-      if(peers.indexOf(myHandle) < 0) return;
-
-      let orders = db.get(myHandle);
-
-      console.log(`My orders: ${JSON.stringify(orders,null,2)}`)
-
-    } catch(err) {
-      console.error(`Error in loadMyOrders(): `, err);
-      throw err;
-    }
   }
 
 </script>
