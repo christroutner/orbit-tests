@@ -56,6 +56,9 @@ async function start() {
       // Calculate a new price.
       price = price * (1 - rndNum);
 
+      // Do not allow the price to become negative.
+      if(price < 0) price = 0;
+
       //console.log(`price: ${price}`);
     }, 1000);
 

@@ -43,6 +43,7 @@ function openDb() {
 
       ipfs.on('ready', async () => {
         //ipfs.swarm.connect('/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star');
+        ipfs.swarm.connect('/ip4/198.46.197.197/tcp/4001/ipfs/QmdXiwDtfKsfnZ6RwEcovoWsdpyEybmmRpVDXmpm5cpk2s'); // Connect to ipfs.p2pvps.net
 
         // Create OrbitDB instance
         const orbitdb = new OrbitDB(ipfs)

@@ -106,7 +106,7 @@
           <div class="form-group">
             <label for="peerId">Handle </label>
             <input type="text" class="form-control" id="peerId" value="handle">
-            <button type="button" class="btn btn-default" onclick="loadMyOrders()">Load Existing Orders</button>
+            <button type="button" class="btn btn-default" onclick="loadMyOrders()">Login Handle</button>
           </div>
         </form>
       </div>
@@ -186,6 +186,7 @@
 <script src="js/bootstrap.min.js?body=1"></script>
 
 <!-- Order book libraries -->
+<script src="js/orderbook/pricechart.js"></script>
 <script src="js/orderbook/orderbook.js"></script>
 
 <script>
@@ -194,12 +195,8 @@
   const PRICE_URL = '/price';
   const DB_URL = '/orderbook';
 
-  // Chart variables.
-  const prices = [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,];
-  const labels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
-  let cfg;
-  let ctx;
-  let chart;
+  // IPFS variables.
+  let ipfs;
 
   // Database variables.
   let db;
@@ -226,10 +223,10 @@
   async function loadIPFS() {
     try {
       const dbAddress = await getDbAddress();
-      console.log(`dbAddress: ${dbAddress}`);
+      console.log(`Got DB Address from price server: ${dbAddress}`);
 
       // Create IPFS instance
-      const ipfs = new Ipfs({
+      ipfs = new Ipfs({
         //repo: '/orbitdb/examples/browser/new/ipfs/0.27.3',
         repo: 'ipfs-' + Math.random(),
         start: true,
@@ -244,7 +241,7 @@
               '/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star',
               // Use local signal server
               // '/ip4/0.0.0.0/tcp/9090/wss/p2p-webrtc-star',
-              '/ip4/192.168.43.202/tcp/4002/ipfs/QmW3hpPj61QqAFw1EP9WUQ3wMobpbGzwVaPxUr1tf4EviU'
+              '/ip4/198.46.197.197/tcp/4001/ipfs/QmdXiwDtfKsfnZ6RwEcovoWsdpyEybmmRpVDXmpm5cpk2s'
             ]
           },
         }
@@ -253,6 +250,13 @@
       ipfs.on('error', (e) => handleError(e))
 
       ipfs.on('ready', async () => {
+        console.log('IPFS is ready');
+
+        // Disconnect from noisy peers
+        ipfs.swarm.disconnect('/dns4/node0.preload.ipfs.io/tcp/443/wss/ipfs/QmZMxNdpMkewiVZLMRxaNxUeZpDUb34pWjZ1kZvsd16Zic');
+        ipfs.swarm.disconnect('/dns4/node1.preload.ipfs.io/tcp/443/wss/ipfs/Qmbut9Ywz9YEDrz8ySBSgWyJk41Uvm2QJPhwDJzJyGFsD6');
+
+        // Create the database.
         orbitdb = new OrbitDB(ipfs);
         db = await orbitdb.open(dbAddress, {
           // If database doesn't exist, create it
@@ -264,14 +268,14 @@
           type: 'keyvalue',
           write: ['*'],
         });
-        console.log(`Connected to DB ${dbAddress}`);
+        console.log(`Connecting to DB ${dbAddress}...`);
 
         db.events.on('ready', () => {
-          console.log(`db is ready!`)
+          console.log(`Database is ready!`)
         })
 
+        // Load the latest local copy of the DB.
         await db.load();
-        console.log(`DB loaded.`)
 
         // Signal that the DB is ready for use.
         dbReady = true;
@@ -279,10 +283,14 @@
         // Retrieve existing orders from the DB.
         showOrders();
 
+        // Attempt to match any orders in the DB.
+        matchOrders();
+
         db.events.on('replicated', (address) => {
           console.log(`DB just replicated with peer ${address}. Re-processing orders...`);
           resetTable();
           showOrders();
+          matchOrders();
         })
       })
     } catch(err) {
@@ -291,8 +299,7 @@
   }
 
   function handleError(e) {
-    console.error(e.stack)
-    statusElm.innerHTML = e.message
+    console.error(`Error with IPFS: `, e.stack)
   }
 
   // Get the price from the price API server.
@@ -306,63 +313,6 @@
       })
     });
   }
-
-  // Update the price array. Keeps the length of the array fixed.
-  async function updatePrice() {
-    try {
-      //debugger;
-
-      const newPrice = await getPrice();
-
-      // Manipulate the arrays to ensure there are always a fixed number of data points.
-      prices.shift();
-      prices.push(newPrice);
-      chart.data.datasets[0].data.shift();
-      chart.data.datasets[0].data.push(newPrice);
-
-      // Update the chart.
-      chart.update();
-
-    } catch(err) {
-      //console.error(`Error in updatePrice(): `, err);
-    }
-  }
-
-  // Chart configuration settings.
-  function configChart() {
-    const cfg = {
-			type: 'bar',
-			data: {
-				labels: labels,
-				datasets: [{
-					label: 'CHRT - Chart.js Corporation',
-					data: prices,
-					type: 'line',
-					pointRadius: 0,
-					fill: false,
-					lineTension: 0,
-					borderWidth: 2
-				}]
-			},
-			options: {
-				scales: {
-					yAxes: [{
-						scaleLabel: {
-							display: true,
-							labelString: 'Closing price ($)'
-						}
-					}]
-				}
-			}
-		};
-
-    return cfg;
-  }
-
-  // Update the price every 2 seconds.
-  const timer = setInterval(function() {
-    updatePrice();
-  }, 2000);
 
   // Get the DB IPFS address
   function getDbAddress() {
@@ -395,63 +345,6 @@
 
     } catch(err) {
       console.error(`Error in loadMyOrders(): `, err);
-      throw err;
-    }
-  }
-
-  async function addOrder() {
-    try {
-      console.log(`addOrder button clicked!`)
-
-      const buysell = $('#orderType').val() === "buy";
-      const price = $('#price').val();
-      const qty = $('#qty').val();
-
-      // Input Validation
-      if(price === "") return;
-      if(qty === "") return;
-
-      // Retrieve data from the web forms.
-      const myHandle = $('#peerId').val();
-      const myOrder = {
-        buysell: buysell,
-        price: price,
-        qty: qty
-      }
-
-      // Get the list of peers
-      let peers = db.get('peers')
-
-      // Handle a new DB.
-      if(!peers) {
-        peers = [myHandle]
-        await db.put('peers', peers);
-
-      // Add user to peers list if they aren't already there.
-      } else {
-        if(peers.indexOf(myHandle) === -1) {
-          peers.push(myHandle);
-          await db.put('peers', peers);
-        }
-      }
-
-
-      // Get existing orders for this peer.
-      let myOrders = db.get(myHandle);
-
-      if(!myOrders) {
-        myOrders = [myOrder];
-      } else {
-        myOrders.push(myOrder);
-      }
-
-      // Save the new order to the DB.
-      await db.put(myHandle, myOrders);
-
-      console.log(`Order added to DB!`)
-
-    } catch(err) {
-      console.error(`Error in addOrder(): `,err);
       throw err;
     }
   }
