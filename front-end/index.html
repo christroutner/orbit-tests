@@ -275,6 +275,11 @@
 
         // Retrieve existing orders from the DB.
         getOrders();
+
+        db.events.on('replicated', (address) => {
+          console.log(`DB just replicated with peer ${address}. Re-processing orders...`);
+          getOrders();
+        })
       })
     } catch(err) {
       console.error(`Error in loadIPFS: `, err);
