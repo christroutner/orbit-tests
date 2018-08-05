@@ -98,7 +98,7 @@ async function addOrder() {
     if(isNaN(qty)) return;
 
     // Exit if the DB can not be validated.
-    if(!validateDb()) return;
+    if(!(await validateDb())) return;
 
     // Retrieve data from the web forms.
     const myHandle = $('#peerId').val();
@@ -138,7 +138,7 @@ async function addOrder() {
 async function matchOrders() {
   try {
     // Exit if the DB can not be validated.
-    if(!validateDb()) return;
+    if(!(await validateDb())) return;
 
     // Retrieve data from the web forms.
     const myHandle = $('#peerId').val();
@@ -151,11 +151,41 @@ async function matchOrders() {
     for(var k=0; k < userOrders.length; k++) {
       const userOrder = userOrders[k];
 
-      // Start with Sell orders, skip if this is a buy order.
       // BUY ORDERS
       if(userOrder.buysell) {
-        continue;
-        
+
+        // Loop through each peer in the db.
+        for(var i=0; i < peers.length; i++) {
+          const thisPeer = peers[i];
+
+          // if the current peer is the current user, then skip.
+          if(thisPeer === myHandle) continue;
+
+          // Loop through each order associated with this peer.
+          const orders = db.get(thisPeer);
+          for(var j=0; j < orders.length; j++) {
+            const thisOrder = orders[j];
+
+            // If this is a buy order, skip
+            if(thisOrder.buysell) continue;
+
+            // Match if buy price is greater than sell price.
+            if(userOrder.price >= thisOrder.price) {
+              //console.log(`userOrder: ${JSON.stringify(userOrder,null,2)}`);
+              //console.log(`thisOrder: ${JSON.stringify(thisOrder,null,2)}`);
+
+              console.log(`Match with ${thisPeer} as seller at ${thisOrder.price} and ${myHandle} as buyer at ${userOrder.price}`);
+
+              alert(`You've been matched!
+              Seller: ${thisPeer}
+              Buyer: You (${myHandle})`);
+
+              // Update DB with results of trade.
+              tradeDb(thisOrder, userOrder);
+            }
+          }
+        }
+
       // SELL ORDERS
       } else {
 
@@ -175,9 +205,9 @@ async function matchOrders() {
             if(!thisOrder.buysell) continue;
 
             // Match if buy price is greater than sell price.
-            if(thisOrder.price > userOrder.price) {
-              console.log(`userOrder: ${JSON.stringify(userOrder,null,2)}`);
-              console.log(`thisOrder: ${JSON.stringify(thisOrder,null,2)}`);
+            if(thisOrder.price >= userOrder.price) {
+              //console.log(`userOrder: ${JSON.stringify(userOrder,null,2)}`);
+              //console.log(`thisOrder: ${JSON.stringify(thisOrder,null,2)}`);
 
               console.log(`Match with ${thisPeer} as buyer at ${thisOrder.price} and ${myHandle} as seller at ${userOrder.price}`);
 
@@ -195,6 +225,7 @@ async function matchOrders() {
     }
   } catch(err) {
     console.error(`Error in matchOrders(): `, err);
+    debugger;
     throw err;
   }
 }
@@ -252,6 +283,7 @@ async function tradeDb(sellOrder, buyOrder) {
       await db.put(seller, newSellerOrders);
     }
 
+    // Refresh the DOM.
     resetTable();
     showOrders();
 
@@ -294,4 +326,5 @@ async function validateDb() {
     }
   }
 
+  return true;
 }

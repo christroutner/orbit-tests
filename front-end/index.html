@@ -268,7 +268,7 @@
           type: 'keyvalue',
           write: ['*'],
         });
-        console.log(`Connecting to DB ${dbAddress}...`);
+        console.log(`Connecting to DB ${dbAddress} waiting...`);
 
         db.events.on('ready', () => {
           console.log(`Database is ready!`)
