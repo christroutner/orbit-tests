@@ -146,7 +146,7 @@
       <div class="col-sm-12">
         <h4>Open Orders</h4>
         <table class="table table-striped" id="orderTable">
-          <tr>
+          <tr id="trHeader">
             <th>Peer</th>
             <th>Order</th>
             <th>Price</th>
@@ -177,14 +177,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
 -->
 
-<!-- Local Libraries -->
+<!-- Local front-end Libraries -->
 <script src="js/jquery.min.js"></script>
 <script src="js/moment.min.js"></script>
 <script src="js/index.min.js"></script>
 <script src="js/Chart.min.js"></script>
-
 <script src="js/orbitdb.min.js"></script>
 <script src="js/bootstrap.min.js?body=1"></script>
+
+<!-- Order book libraries -->
+<script src="js/orderbook/orderbook.js"></script>
+
 <script>
 
   const SERVER = `http://192.168.43.202:6543`;
@@ -274,11 +277,12 @@
         dbReady = true;
 
         // Retrieve existing orders from the DB.
-        getOrders();
+        showOrders();
 
         db.events.on('replicated', (address) => {
           console.log(`DB just replicated with peer ${address}. Re-processing orders...`);
-          getOrders();
+          resetTable();
+          showOrders();
         })
       })
     } catch(err) {
@@ -370,59 +374,6 @@
         return reject(error);
       })
     });
-  }
-
-  // Load orders from the orderbook DB.
-  async function getOrders() {
-    try {
-      // Exit if DB is not ready.
-      if(!dbReady) return;
-
-      // Get the list of peers.
-      let peers = db.get('peers')
-
-      const myHandle = $('#peerId').val();
-
-      // Handle a new DB.
-      if(!peers) {
-        peers = [myHandle]
-      }
-
-      // Get orders for each peer.
-      for(var i = 0; i < peers.length; i++) {
-        const thisPeer = peers[i]
-
-        let orders = db.get(thisPeer)
-        if(!orders) orders = [];
-
-        //console.log(`Order belonging to ${thisPeer}: ${JSON.stringify(orders)}`)
-
-        // Loop through each order.
-        for(var j=0; j < orders.length; j++) {
-          const thisOrder = orders[j];
-          const thisRow = $('#trScaffold').clone();
-
-          thisRow.find('.tdPeer').text(thisPeer);
-
-          if(thisOrder.buysell)
-            thisRow.find('.tdOrder').text('Buy')
-          else
-            thisRow.find('.tdOrder').text('Sell')
-
-          thisRow.find('.tdPrice').text(thisOrder.price)
-
-          thisRow.find('.tdQty').text(thisOrder.qty)
-
-          thisRow.find('.tdCancel').find('button').show()
-
-          $('#orderTable').append(thisRow)
-        }
-      }
-
-    } catch(err) {
-      console.error(`Error in getOrder(): `, err);
-      throw err;
-    }
   }
 
   async function loadMyOrders() {
