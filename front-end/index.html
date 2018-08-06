@@ -271,11 +271,28 @@
   // Get the price from the price API server.
   function getPrice() {
     return new Promise(function(resolve, reject) {
+      /*
       $.get(`${SERVER}${PRICE_URL}`, '', function(data) {
         return resolve(Math.round(Number(data)*100)/100);
       })
       .fail((jqxhr, textStatus, error) => {
         return reject(error);
+      })
+      */
+
+      $.ajax({
+        url: `${SERVER}${PRICE_URL}`,
+        data: '',
+        method: 'GET',
+        headers: {
+          access-control-allow-origin: "*"
+        },
+        success: function(data) {
+          return resolve(Math.round(Number(data)*100)/100);
+        },
+        error: function(jqxhr, textStatus, error) {
+          return reject(error);
+        }
       })
     });
   }
