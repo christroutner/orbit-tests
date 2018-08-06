@@ -37,7 +37,7 @@ async function showOrders() {
 
     // Get the list of peers.
     let peers = db.get('peers')
-    if(!peer) return; // Exit if DB has not peers.
+    if(!peers) return; // Exit if DB has not peers.
 
     const myHandle = $('#peerId').val();
 
