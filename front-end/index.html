@@ -153,11 +153,11 @@
 
 <script>
 
-  const LOCAL = true; // Set to false when deploying to a server.
+  const LOCAL = false; // Set to false when deploying to a server.
 
   let SERVER = `http://192.168.43.202:6543`;
   if(!LOCAL) {
-    SERVER = `https://ipfs.p2pvps.ne`;
+    SERVER = `https://ipfs.p2pvps.net`;
   }
 
   const PRICE_URL = '/price';
@@ -186,6 +186,13 @@
 
     // Load IPFS and the Orbit DB.
     loadIPFS();
+
+    // React when the user changes their handle.
+    $('#peerId').focusout(function(event) {
+      // Refresh the DOM.
+      resetTable();
+      showOrders();
+    });
   });
 
   async function loadIPFS() {
