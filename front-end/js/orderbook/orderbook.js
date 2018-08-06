@@ -97,7 +97,7 @@ async function cancelOrder(event) {
   const orders = db.get(handle);
 
   // Filter out the current order.
-  const newOrders = orders.filter(order => order.buysell !== buysell && order.price !== price);
+  const newOrders = orders.filter(order => order.buysell !== buysell || order.price !== price);
 
   // Update the database.
   await db.put(handle, newOrders);
@@ -110,7 +110,7 @@ async function cancelOrder(event) {
 // to the database, then refreshes the order table.
 async function addOrder() {
   try {
-    console.log(`addOrder button clicked!`)
+    //console.log(`addOrder button clicked!`)
 
     const buysell = $('#orderType').val() === "buy";
     let price = $('#price').val();
