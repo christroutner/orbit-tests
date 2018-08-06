@@ -142,7 +142,7 @@
 <!-- Local front-end Libraries -->
 <script src="js/jquery.min.js"></script>
 <script src="js/moment.min.js"></script>
-<script src="js/index.min.js" crossorigin="anonymous"></script>
+<script src="js/index.min.js"></script>
 <script src="js/Chart.min.js"></script>
 <script src="js/orbitdb.min.js"></script>
 <script src="js/bootstrap.min.js?body=1"></script>
@@ -284,9 +284,9 @@
         url: `${SERVER}${PRICE_URL}`,
         data: '',
         method: 'GET',
-        headers: {
-          access-control-allow-origin: "*"
-        },
+        //headers: {
+        //  'Access-Control-Allow-Origin': '*'
+        //},
         success: function(data) {
           return resolve(Math.round(Number(data)*100)/100);
         },
