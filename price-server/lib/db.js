@@ -54,7 +54,7 @@ function openDb() {
         }
 
         // Load the DB.
-        db = await orbitdb.keyvalue('orderbook', access)
+        db = await orbitdb.keyvalue('orderbook01', access)
         await db.load()
 
         console.log(`database string: ${db.address.toString()}`)
