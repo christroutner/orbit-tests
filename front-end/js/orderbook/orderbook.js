@@ -37,6 +37,7 @@ async function showOrders() {
 
     // Get the list of peers.
     let peers = db.get('peers')
+    if(!peer) return; // Exit if DB has not peers.
 
     const myHandle = $('#peerId').val();
 
@@ -99,7 +100,7 @@ async function cancelOrder(event) {
   const newOrders = orders.filter(order => order.buysell !== buysell && order.price !== price);
 
   // Update the database.
-  db.put(handle, newOrders);
+  await db.put(handle, newOrders);
 
   resetTable();
   showOrders();
