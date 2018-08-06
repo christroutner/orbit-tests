@@ -32,7 +32,8 @@ async function showOrders() {
     //console.log('showing orders');
 
     // Exit if the DB can not be validated.
-    if(!validateDb()) return;
+    const dbIsValid = await validateDb();
+    if(!dbIsValid) return;
 
     // Get the list of peers.
     let peers = db.get('peers')
@@ -125,7 +126,8 @@ async function addOrder() {
     if(isNaN(qty)) return;
 
     // Exit if the DB can not be validated.
-    if(!(await validateDb())) return;
+    const dbIsValid = await validateDb();
+    if(!dbIsValid) return;
 
     // Retrieve data from the web forms.
     const myHandle = $('#peerId').val();
@@ -165,7 +167,8 @@ async function addOrder() {
 async function matchOrders() {
   try {
     // Exit if the DB can not be validated.
-    if(!(await validateDb())) return;
+    const dbIsValid = await validateDb();
+    if(!dbIsValid) return;
 
     // Retrieve data from the web forms.
     const myHandle = $('#peerId').val();
@@ -176,7 +179,7 @@ async function matchOrders() {
 
     // handling a bug.
     if(!userOrders) {
-      debugger;
+      //debugger;
       return;
     }
 
@@ -330,7 +333,6 @@ async function tradeDb(sellOrder, buyOrder) {
 // in it. It returns true on success or false if there is a problem that can not
 // be automatically handled.
 async function validateDb() {
-
   // Exit if DB is not ready.
   if(!dbReady) return false;
 
@@ -353,10 +355,14 @@ async function validateDb() {
       // Add current user to the list of peer.
       peers.push(myHandle);
       await db.put('peers', peers);
-
-      // Create an empty array to store this users orders.
-      await db.put(myHandle, []);
     }
+  }
+
+  // Get orders associated with this peer
+  const myOrders = db.get(myHandle);
+  if(!myOrders) {
+    // Create an empty array to store this users orders.
+    await db.put(myHandle, []);
   }
 
   return true;

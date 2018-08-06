@@ -153,7 +153,13 @@
 
 <script>
 
-  const SERVER = `https://ipfs.p2pvps.net`;
+  const LOCAL = true; // Set to false when deploying to a server.
+
+  let SERVER = `http://192.168.43.202:6543`;
+  if(!LOCAL) {
+    SERVER = `https://ipfs.p2pvps.ne`;
+  }
+
   const PRICE_URL = '/price';
   const DB_URL = '/orderbook';
 
@@ -206,14 +212,16 @@
               "/ip4/107.170.133.32/tcp/4001/ipfs/QmUZRGLhcKXF1JyuaHgKm23LvqcoMYwtb9jmh8CkP4og3K",
               "/ip4/139.59.174.197/tcp/4001/ipfs/QmZfTbnpvPwxCjpCG3CXJ7pfexgkBZ2kgChAiRJrTK1HsM",
               "/ip4/139.59.6.222/tcp/4001/ipfs/QmRDcEDK9gSViAevCHiE6ghkaBCU7rTuQj4BDpmCzRvRYg",
-              "/ip4/46.101.198.170/tcp/4001/ipfs/QmePWxsFT9wY3QuukgVDB7XZpqdKhrqJTHTXU7ECLDWJqX"
+              "/ip4/46.101.198.170/tcp/4001/ipfs/QmePWxsFT9wY3QuukgVDB7XZpqdKhrqJTHTXU7ECLDWJqX",
+              "/ip4/198.46.197.197/tcp/4001/ipfs/QmdXiwDtfKsfnZ6RwEcovoWsdpyEybmmRpVDXmpm5cpk2s",
+              "/ip4/198.46.197.197/tcp/4002/ipfs/QmWAm7ZPLGTgofLXZgoAzEaNkYFPsaVKKGjWscE4Fbec9P"
             ]
           },
 
-          Bootstrap: [
-            "/ip4/198.46.197.197/tcp/4001/ipfs/QmdXiwDtfKsfnZ6RwEcovoWsdpyEybmmRpVDXmpm5cpk2s",
-            "/ip4/198.46.197.197/tcp/4002/ipfs/QmWAm7ZPLGTgofLXZgoAzEaNkYFPsaVKKGjWscE4Fbec9P"
-          ]
+          //Bootstrap: [
+          //  "/ip4/198.46.197.197/tcp/4001/ipfs/QmdXiwDtfKsfnZ6RwEcovoWsdpyEybmmRpVDXmpm5cpk2s",
+          //  "/ip4/198.46.197.197/tcp/4002/ipfs/QmWAm7ZPLGTgofLXZgoAzEaNkYFPsaVKKGjWscE4Fbec9P"
+          //]
         }
       })
 
@@ -223,10 +231,11 @@
         console.log('IPFS is ready');
 
         // Disconnect from noisy peers
-        ipfs.swarm.disconnect('/dns4/node0.preload.ipfs.io/tcp/443/wss/ipfs/QmZMxNdpMkewiVZLMRxaNxUeZpDUb34pWjZ1kZvsd16Zic');
-        ipfs.swarm.disconnect('/dns4/node1.preload.ipfs.io/tcp/443/wss/ipfs/Qmbut9Ywz9YEDrz8ySBSgWyJk41Uvm2QJPhwDJzJyGFsD6');
+        //ipfs.swarm.disconnect('/dns4/node0.preload.ipfs.io/tcp/443/wss/ipfs/QmZMxNdpMkewiVZLMRxaNxUeZpDUb34pWjZ1kZvsd16Zic');
+        //ipfs.swarm.disconnect('/dns4/node1.preload.ipfs.io/tcp/443/wss/ipfs/Qmbut9Ywz9YEDrz8ySBSgWyJk41Uvm2QJPhwDJzJyGFsD6');
 
         // Create the database.
+        console.log(`Connecting to DB ${dbAddress} waiting...`);
         orbitdb = new OrbitDB(ipfs);
         db = await orbitdb.open(dbAddress, {
           // If database doesn't exist, create it
@@ -238,7 +247,7 @@
           type: 'keyvalue',
           write: ['*'],
         });
-        console.log(`Connecting to DB ${dbAddress} waiting...`);
+
 
         db.events.on('ready', () => {
           console.log(`Database is ready!`)
