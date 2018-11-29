@@ -8,5 +8,9 @@
     "start": "node master-node.js"
   },
   "author": "Chris Troutner <chris.troutner@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "ipfs": "^0.33.1",
+    "orbit-db": "^0.19.9"
+  }
 }

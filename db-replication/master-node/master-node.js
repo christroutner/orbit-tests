@@ -9,7 +9,7 @@
 const DB_NAME = "example5343234"
 
 const IPFS = require('ipfs')
-const OrbitDB = require('../src/OrbitDB')
+const OrbitDB = require('orbit-db')
 
 const creatures = ['🐙', '🐷', '🐬', '🐞', '🐈', '🙉', '🐸', '🐓']
 

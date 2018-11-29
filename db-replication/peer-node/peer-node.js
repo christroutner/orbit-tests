@@ -5,7 +5,7 @@ const MASTER_MULTIADDR = "/ip4/162.243.158.213/tcp/4002/ipfs/QmeiNB8wUbS61976FBr
 const DB_ADDRESS = "/orbitdb/QmcGyFSjcMu9qtQwhc53ccuAquB6QoQ1DqcK1SEVsCSed6/example565656"
 
 const IPFS = require('ipfs')
-const OrbitDB = require('../src/OrbitDB')
+const OrbitDB = require('orbit-db')
 
 const creatures = ['🐙', '🐷', '🐬', '🐞', '🐈', '🙉', '🐸', '🐓']
 
