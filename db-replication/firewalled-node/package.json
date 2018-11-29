@@ -1,12 +1,16 @@
 {
-  "name": "peer-node",
+  "name": "firewalled-node",
   "version": "1.0.0",
   "description": "",
-  "main": "peer-node.js",
+  "main": "firewalled-node.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node peer-node.js"
+    "start": "node firewalled-node.js"
   },
   "author": "Chris Troutner <chris.troutner@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "ipfs": "^0.33.1",
+    "orbit-db": "^0.19.9"
+  }
 }

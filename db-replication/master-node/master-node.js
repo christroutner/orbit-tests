@@ -60,7 +60,9 @@ ipfs.on('ready', async () => {
     const userId = Math.floor(Math.random() * 900 + 100)
 
     try {
-      await db.add({ avatar: creatures[index], userId: userId })
+      const entry = { avatar: creatures[index], userId: userId }
+      console.log(`Adding ${entry.avatar} ${entry.userId} to DB.`)
+      await db.add(entry)
       const latest = db.iterator({ limit: 5 }).collect()
       let output = ``
       output += `[Latest Visitors]\n`
