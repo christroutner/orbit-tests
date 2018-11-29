@@ -1,0 +1,18 @@
+{
+  "name": "peer-announce",
+  "version": "1.0.0",
+  "description": "This directory contains a protoype of using the [Event Store or Logging type DB](https://github.com/orbitdb/orbit-db-eventstore) in OrbitDB as a way for new peers joining a network to announce themselves and distribute the information needed for other peers to connect to them.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ipfs": "^0.33.1",
+    "orbit-db": "^0.19.9"
+  }
+}

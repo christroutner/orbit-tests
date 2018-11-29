@@ -1,0 +1,12 @@
+{
+  "name": "master-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "master-node.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node master-node.js"
+  },
+  "author": "Chris Troutner <chris.troutner@gmail.com>",
+  "license": "MIT"
+}

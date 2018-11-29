@@ -1,0 +1,1 @@
+This directory contains a protoype of using the [Event Store or Logging type DB](https://github.com/orbitdb/orbit-db-eventstore) in OrbitDB as a way for new peers joining a network to announce themselves and distribute the information needed for other peers to connect to them.
