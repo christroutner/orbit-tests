@@ -17,6 +17,12 @@ const ipfs = new IPFS({
   EXPERIMENTAL: {
     pubsub: true,
   },
+  relay: {
+    enabled: true, // enable circuit relay dialer and listener
+    hop: {
+      enabled: true // enable circuit relay HOP (make this node a relay)
+    }
+  }
 })
 
 ipfs.on('error', (err) => console.error(err))
