@@ -1,0 +1,16 @@
+{
+  "name": "cr-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "cr-node.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node cr-node.js"
+  },
+  "author": "Chris Troutner <chris.troutner@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "ipfs": "^0.33.1",
+    "orbit-db": "^0.19.9"
+  }
+}
