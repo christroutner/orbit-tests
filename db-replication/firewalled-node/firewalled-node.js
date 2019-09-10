@@ -2,7 +2,7 @@
 
 // CUSTOMIZE THESE VARIABLES
 const MASTER_MULTIADDR = "/ip4/138.68.212.34/tcp/4002/ipfs/QmVmrqFPYLXcTR6tkFzqxvjCFD3wSGWzLU382gGh4CLfW2"
-const DB_ADDRESS = "/orbitdb/zdpuArvh5JF7buWJaJdJuZR7xfPmv3htPeSqfZK6eyUqrycWQ/example876"
+const DB_ADDRESS = "/orbitdb/zdpuArJQHJMkUd8U9j1kPfGpd6TKSPpuq7By6Uto72MBezVc2/example878"
 
 const IPFS = require('ipfs')
 const OrbitDB = require('orbit-db')
@@ -42,9 +42,17 @@ ipfs.on('ready', async () => {
     const orbitdb = await OrbitDB.createInstance(ipfs, {
       directory: "./orbitdb/examples/eventlog"
     });
-    db = await orbitdb.eventlog(DB_ADDRESS, { overwrite: true });
+
+    // Make the DB public, so that anyone can write.
+    const options = {
+      accessController: {
+        write: ["*"]
+      }
+    }
+
+    db = await orbitdb.eventlog(DB_ADDRESS, options);
     await db.load();
-    
+
   } catch (e) {
     console.error(e)
     process.exit(1)
