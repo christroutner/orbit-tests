@@ -6,7 +6,7 @@
 'use strict'
 
 // CUSTOMIZE THESE VARIABLES
-const DB_NAME = "example5343234"
+const DB_NAME = "example876"
 
 const IPFS = require('ipfs')
 const OrbitDB = require('orbit-db')
@@ -26,8 +26,7 @@ const ipfs = new IPFS({
     hop: {
       enabled: true // enable circuit relay HOP (make this node a relay)
     }
-  },
-  pubsub: true
+  }
 })
 
 ipfs.on('error', (err) => console.error(err))

@@ -1,8 +1,8 @@
 'use strict'
 
 // CUSTOMIZE THESE VARIABLES
-const MASTER_MULTIADDR = "/ip4/162.243.158.213/tcp/4002/ipfs/QmQWgBQWpJkf93NW7rgVvycmot6arDxtuJGnArbyuznC6b"
-const DB_ADDRESS = "/orbitdb/QmdSeUenVxgwsgbo3ZidV2oxW1RFr5XxGNfVtSRN4p4Eda/example5343234"
+const MASTER_MULTIADDR = "/ip4/127.0.0.1/tcp/4002/ipfs/QmcRfB3SJp92t7GMgS5rygXuSDPm7q31GeAdP8q9HutyYT"
+const DB_ADDRESS = "/orbitdb/QmZ5jia53XoQwmsosyZDCFRHYwMdzy3Dj6g61uBEANFeZt/example876"
 
 const IPFS = require('ipfs')
 const OrbitDB = require('orbit-db')
@@ -22,8 +22,7 @@ const ipfs = new IPFS({
     hop: {
       enabled: true // enable circuit relay HOP (make this node a relay)
     }
-  },
-  pubsub: true
+  }
 })
 
 ipfs.on('error', (err) => console.error(err))
@@ -33,6 +32,8 @@ ipfs.on("replicated", () => {
 })
 
 ipfs.on('ready', async () => {
+  console.log(`ipfs ready.`)
+
   let db
 
   await ipfs.swarm.connect(MASTER_MULTIADDR)
