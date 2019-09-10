@@ -3,23 +3,23 @@
   use the Circuit Relay feature to help nodes communicate with one another.
 */
 
-'use strict'
+"use strict";
 
 // CUSTOMIZE THESE VARIABLES
-const DB_NAME = "example876"
+const DB_NAME = "example876";
 
-const IPFS = require('ipfs')
-const OrbitDB = require('orbit-db')
+const IPFS = require("ipfs");
+const OrbitDB = require("orbit-db");
 
-const creatures = ['🐙', '🐷', '🐬', '🐞', '🐈', '🙉', '🐸', '🐓']
+const creatures = ["🐙", "🐷", "🐬", "🐞", "🐈", "🙉", "🐸", "🐓"];
 
-console.log("Starting...")
+console.log("Starting...");
 
 const ipfs = new IPFS({
-  repo: './orbitdb/examples/ipfs',
+  repo: "./orbitdb/examples/ipfs",
   start: true,
   EXPERIMENTAL: {
-    pubsub: true,
+    pubsub: true
   },
   relay: {
     enabled: true, // enable circuit relay dialer and listener
@@ -27,55 +27,57 @@ const ipfs = new IPFS({
       enabled: true // enable circuit relay HOP (make this node a relay)
     }
   }
-})
+});
 
-ipfs.on('error', (err) => console.error(err))
+ipfs.on("error", err => console.error(err));
 
 ipfs.on("replicated", () => {
-      console.log(`replication event fired`);
-})
+  console.log(`replication event fired`);
+});
 
-ipfs.on('ready', async () => {
-  let db
+ipfs.on("ready", async () => {
+  let db;
 
   try {
-    const access = {
-        // Give write access to everyone
-        write: ["*"]
-      };
+    const orbitdb = await OrbitDB.createInstance(ipfs, {
+      directory: "./orbitdb/examples/eventlog"
+    });
+    db = await orbitdb.eventlog(DB_NAME, { overwrite: true });
+    await db.load();
 
-    const orbitdb = new OrbitDB(ipfs, './orbitdb/examples/eventlog')
-    db = await orbitdb.eventlog(DB_NAME, access)
-    await db.load()
-
-    console.log(`db id: ${db.id}`)
-
+    console.log(`db id: ${db.id}`);
   } catch (e) {
-    console.error(e)
-    process.exit(1)
+    console.error(e);
+    process.exit(1);
   }
 
   const query = async () => {
-    const index = Math.floor(Math.random() * creatures.length)
-    const userId = Math.floor(Math.random() * 900 + 100)
+    const index = Math.floor(Math.random() * creatures.length);
+    const userId = Math.floor(Math.random() * 900 + 100);
 
     try {
-      const entry = { avatar: creatures[index], userId: userId }
-      console.log(`Adding ${entry.avatar} ${entry.userId} to DB.`)
-      await db.add(entry)
-      const latest = db.iterator({ limit: 5 }).collect()
-      let output = ``
-      output += `[Latest Visitors]\n`
-      output += `--------------------\n`
-      output += `ID  | Visitor\n`
-      output += `--------------------\n`
-      output += latest.reverse().map((e) => e.payload.value.userId + ' | ' + e.payload.value.avatar + ')').join('\n') + `\n`
-      console.log(output)
+      const entry = { avatar: creatures[index], userId: userId };
+      console.log(`Adding ${entry.avatar} ${entry.userId} to DB.`);
+      await db.add(entry);
+      const latest = db.iterator({ limit: 5 }).collect();
+      let output = ``;
+      output += `[Latest Visitors]\n`;
+      output += `--------------------\n`;
+      output += `ID  | Visitor\n`;
+      output += `--------------------\n`;
+      output +=
+        latest
+          .reverse()
+          .map(
+            e => e.payload.value.userId + " | " + e.payload.value.avatar + ")"
+          )
+          .join("\n") + `\n`;
+      console.log(output);
     } catch (e) {
-      console.error(e)
-      process.exit(1)
+      console.error(e);
+      process.exit(1);
     }
-  }
+  };
 
-  setInterval(query, 1000*30)
-})
+  setInterval(query, 1000 * 30);
+});
