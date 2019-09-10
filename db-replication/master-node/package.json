@@ -10,7 +10,7 @@
   "author": "Chris Troutner <chris.troutner@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "ipfs": "^0.33.1",
+    "ipfs": "^0.37.1",
     "orbit-db": "^0.19.9"
   }
 }
