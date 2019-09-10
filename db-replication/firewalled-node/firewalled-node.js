@@ -1,8 +1,8 @@
 'use strict'
 
 // CUSTOMIZE THESE VARIABLES
-const MASTER_MULTIADDR = "/ip4/127.0.0.1/tcp/4002/ipfs/QmcRfB3SJp92t7GMgS5rygXuSDPm7q31GeAdP8q9HutyYT"
-const DB_ADDRESS = "/orbitdb/QmZ5jia53XoQwmsosyZDCFRHYwMdzy3Dj6g61uBEANFeZt/example876"
+const MASTER_MULTIADDR = "/ip4/138.68.212.34/tcp/4002/ipfs/QmVmrqFPYLXcTR6tkFzqxvjCFD3wSGWzLU382gGh4CLfW2"
+const DB_ADDRESS = "/orbitdb/zdpuArvh5JF7buWJaJdJuZR7xfPmv3htPeSqfZK6eyUqrycWQ/example876"
 
 const IPFS = require('ipfs')
 const OrbitDB = require('orbit-db')
@@ -39,9 +39,12 @@ ipfs.on('ready', async () => {
   await ipfs.swarm.connect(MASTER_MULTIADDR)
 
   try {
-    const orbitdb = new OrbitDB(ipfs, './orbitdb/examples/eventlog')
-    db = await orbitdb.eventlog(DB_ADDRESS)
-    await db.load()
+    const orbitdb = await OrbitDB.createInstance(ipfs, {
+      directory: "./orbitdb/examples/eventlog"
+    });
+    db = await orbitdb.eventlog(DB_ADDRESS, { overwrite: true });
+    await db.load();
+    
   } catch (e) {
     console.error(e)
     process.exit(1)

@@ -6,7 +6,7 @@
 "use strict";
 
 // CUSTOMIZE THESE VARIABLES
-const DB_NAME = "example876";
+const DB_NAME = "example878";
 
 const IPFS = require("ipfs");
 const OrbitDB = require("orbit-db");
@@ -42,7 +42,14 @@ ipfs.on("ready", async () => {
     const orbitdb = await OrbitDB.createInstance(ipfs, {
       directory: "./orbitdb/examples/eventlog"
     });
-    db = await orbitdb.eventlog(DB_NAME, { overwrite: true });
+
+    const options = {
+      accessController: {
+        write: ["*"]
+      }
+    }
+
+    db = await orbitdb.eventlog(DB_NAME, options);
     await db.load();
 
     console.log(`db id: ${db.id}`);
